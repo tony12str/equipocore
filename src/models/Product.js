@@ -26,6 +26,12 @@ const productSchema = new mongoose.Schema({
     unique: true,
     trim: true
   },
+  category: {  // Nuevo campo (podría ser String o referencia a otro modelo)
+    type: String,
+    required: true,
+    trim: true,
+    default: 'uncategorized'  // Opcional: valor por defecto
+  },
   createdAt: {
     type: Date,
     default: Date.now
