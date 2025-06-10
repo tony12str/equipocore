@@ -1,69 +1,40 @@
 const express = require('express');
-const bodyParser = require('body-parser');
-const cors = require('cors');
+const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const path = require('path');
 
+// Configura variables de entorno
 dotenv.config();
 
 const app = express();
 
-// Middlewares
-app.use(cors());
-app.use(bodyParser.json());
+// Middleware para leer datos del formulario
 app.use(express.urlencoded({ extended: true }));
 
-// EJS
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'src', 'views'));
+// Carpeta de archivos estáticos (CSS, imágenes, etc.)
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Rutas API
-const productRoutes = require('./src/routes/productRoutes');
-const saleRoutes = require('./src/routes/saleRoutes');
-app.use('/api/products', productRoutes);
-app.use('/api/sales', saleRoutes);
+// Motor de vistas (EJS)
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
 
-// Rutas Frontend
-const Product = require('./src/models/Product');
+// Ruta principal
+const cajaRoutes = require('./routes/caja');
+app.use('/', cajaRoutes);
 
-app.get('/', (req, res) => {
-  res.render('index');
+// Conexión a MongoDB
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+})
+.then(() => {
+  console.log('✅ Conectado a MongoDB');
+  // Iniciar servidor
+  const port = process.env.PORT || 3000;
+  app.listen(port, () => {
+    console.log(`🚀 Servidor en http://localhost:${port}`);
+  });
+})
+.catch(err => {
+  console.error('❌ Error al conectar a MongoDB:', err);
 });
-
-app.get('/products', async (req, res) => {
-  const products = await Product.find();
-  res.render('products/list', { products });
-});
-
-app.get('/products/new', (req, res) => {
-  res.render('products/new');
-});
-
-app.post('/products', async (req, res) => {
-  const { name, price, barcode } = req.body;
-  await Product.create({ name, price, barcode });
-  res.redirect('/products');
-});
-
-
-// Editar producto - mostrar formulario
-app.get('/products/edit/:id', async (req, res) => {
-  const product = await Product.findById(req.params.id);
-  res.render('products/edit', { product });
-});
-
-// Editar producto - guardar cambios
-app.post('/products/edit/:id', async (req, res) => {
-  const { name, price } = req.body;
-  await Product.findByIdAndUpdate(req.params.id, { name, price });
-  res.redirect('/products');
-});
-
-// Eliminar producto
-app.post('/products/delete/:id', async (req, res) => {
-  await Product.findByIdAndDelete(req.params.id);
-  res.redirect('/products');
-});
-
-module.exports = app;
