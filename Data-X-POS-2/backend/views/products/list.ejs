@@ -66,7 +66,8 @@
     </form>
 
     <a href="/products/new" class="btn btn-outline-dark mb-3">➕ Agregar producto</a>
-    
+    <a href="/cart/view" class="btn btn-success mb-3">🛒 Ver carrito</a>
+
     <table class="table table-bordered table-vintage">
       <thead>
         <tr>
@@ -80,9 +81,7 @@
       <tbody>
         <% products.forEach(p => { %>
           <tr class="<%= p.stock <= 0 ? 'no-stock' : (p.stock < 10 ? 'low-stock' : '') %>">
-            <td>
-              <%= p.name %>
-            </td>
+            <td><%= p.name %></td>
             <td><%= p.category %></td>
             <td>$<%= p.price.toFixed(2) %></td>
             <td>
@@ -98,6 +97,14 @@
               <form action="/products/delete/<%= p._id %>" method="POST" style="display:inline;">
                 <button class="btn btn-sm btn-danger" onclick="return confirm('¿Eliminar este producto?')">🗑️ Eliminar</button>
               </form>
+
+              <!-- Formulario para agregar al carrito -->
+              <form action="/cart/add/<%= p._id %>" method="POST" style="display:inline-flex; align-items:center; gap: 0.5rem;">
+              <input type="number" name="quantity" value="1" min="1" style="width: 60px;" required>
+              <button type="submit" class="btn btn-sm btn-success">🛒 Agregar</button>
+            </form>
+
+
             </td>
           </tr>
         <% }) %>
